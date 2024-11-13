@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Card Viewer</title>
+<meta charset="UTF-8">
+<style>
+
+body 
+{
+    background-color: #111;
+    font-family: arial;
+    color: #fff;
+}
+
+#load-flashcards-textarea
+{
+    position: fixed;
+    top: 25px;
+    bottom: 25px;
+    right: 25px;
+    left: 25px;
+    resize: none;
+    outline: none;
+    background-color: #333;
+    border: 0px;
+    border-radius: 6px;
+    color: #eee;
+    font-size: 24px;
+}
+
+.btn
+{
+    color: #eee;
+    background-color: #555;
+    user-select: none;
+    -webkit-user-select: none;
+    padding: 6px 12px;
+    font-size: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.btn:hover
+{
+    background-color: #666;
+}
+.btn:active
+{
+    background-color: #777;
+}
+
+.position-bottom-right-50
+{
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+}
+.position-bottom-left-50
+{
+    position: fixed;
+    bottom: 50px;
+    left: 50px;
+}
+.position-top-left-50
+{
+    position: fixed;
+    top: 50px;
+    left: 50px;
+}
+.position-top-right-50
+{
+    position: fixed;
+    top: 50px;
+    right: 50px;
+}
+
+.position-bottom-right-25
+{
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+}
+.position-bottom-left-25
+{
+    position: fixed;
+    bottom: 25px;
+    left: 25px;
+}
+.position-top-left-25
+{
+    position: fixed;
+    top: 25px;
+    left: 25px;
+}
+.position-top-right-25
+{
+    position: fixed;
+    top: 25px;
+    right: 25px;
+}
+
+#divider-line
+{
+    background-color: #ddd;
+    position: fixed;
+    left: 25px;
+    right: 25px;
+    top: 35vh;
+    height: 5px;
+}
+
+#card-front
+{
+    position: fixed;
+    bottom: 70vh;
+    top: 100px;
+    left: 50px;
+    right: 50px;
+    font-size: 60px;
+}
+#card-front > span
+{
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    text-align: center;
+}
+
+#card-back
+{
+    position: fixed;
+    top: 40vh;
+    bottom: 75px;
+    left: 50px;
+    right: 50px;
+    font-size: 48px;
+    text-align: center;
+}
+
+#card-number
+{
+    font-size: 24px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="load-flashcards-box">
+    <textarea id="load-flashcards-textarea" placeholder="Enter flashcard text here..."></textarea>
+    <btn type="btn" class="btn position-bottom-right-50" onclick="loadFlashcardsFromText()">Load</btn>
+</div>
+
+<div id="view-flashcards-box" style="display: none;">
+    <div id="card-number" class="position-top-left-25">2 / 23</div>
+    <div id="card-front"><span>降ろす</span></div>
+    <div id="divider-line"></div>
+    <div id="card-back">おろす to take down, unload [descend]</div>
+    <btn type="btn" class="btn position-bottom-right-25" onclick="advanceFlashCards()">Next</btn>
+    <btn type="btn" class="btn position-bottom-left-25" onclick="resetFlashCards()">Reset</btn>
+</div>
+
+</body>
+
+<script>
+
+var g_flashcards = [];
+var g_currentFlashCardNumber = 0;
+var g_isShowingCardFront = true;
+
+// copies text to clipboard
+function copyToClipboard(text)
+{
+    navigator.clipboard.writeText(text);
+}
+
+function loadFlashcardsFromText()
+{
+    var flashcardText = document.getElementById('load-flashcards-textarea').value;
+    g_flashcards = flashcardText.replace(/\n+/gm,'\n').split('\n');
+    document.getElementById('load-flashcards-box').style.display = 'none';
+    document.getElementById('view-flashcards-box').style.display = 'block';
+    resetFlashCards();
+}
+
+function resetFlashCards()
+{
+    shuffleFlashCardArray();
+    g_currentFlashCardNumber = 0;
+    g_isShowingCardFront = true;
+    document.getElementById('card-front').innerHTML = '<span>' + makeHTMLsafe(extractFlashCardFront(g_flashcards[0])) + '</span>';
+    document.getElementById('card-back').innerHTML = '';
+    document.getElementById('card-number').innerHTML = '1 / ' + g_flashcards.length;
+}
+
+function advanceFlashCards()
+{
+    if (g_isShowingCardFront)
+    {
+        g_isShowingCardFront = false;
+        document.getElementById('card-back').innerHTML = makeHTMLsafe(extractFlashCardBack(g_flashcards[g_currentFlashCardNumber]));
+        return;
+    }
+
+    if (g_currentFlashCardNumber == g_flashcards.length - 1)
+    {
+        return;
+    }
+
+    g_isShowingCardFront = true;
+    g_currentFlashCardNumber++;
+    document.getElementById('card-front').innerHTML = '<span>' + makeHTMLsafe(extractFlashCardFront(g_flashcards[g_currentFlashCardNumber])) + '</span>';
+    document.getElementById('card-back').innerHTML = '';
+    document.getElementById('card-number').innerHTML = (g_currentFlashCardNumber + 1) + ' / ' + g_flashcards.length;
+}
+
+function shuffleFlashCardArray()
+{
+    for(let i = 0; i < g_flashcards.length; i++)
+    {
+        var randomIndex = Math.floor(Math.random() * g_flashcards.length);
+        var temp = g_flashcards[i];
+        g_flashcards[i] = g_flashcards[randomIndex];
+        g_flashcards[randomIndex] = temp;
+    }
+}
+
+function extractFlashCardFront(flashCardText)
+{
+    if (flashCardText.indexOf('|') > -1)
+    {
+        return flashCardText.substring(0, flashCardText.indexOf('|'));
+    }
+    return flashCardText;
+}
+
+function extractFlashCardBack(flashCardText)
+{
+    if (flashCardText.indexOf('|') > -1)
+    {
+        return flashCardText.substring(flashCardText.indexOf('|') + 1, flashCardText.length);
+    }
+    return flashCardText;
+}
+
+// encodes text for HTML
+function makeHTMLsafe(text)
+{
+    return text.replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;');
+}
+
+</script>
+
+
+</html>
