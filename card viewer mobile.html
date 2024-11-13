@@ -143,6 +143,11 @@ body
     font-size: 48px;
 }
 
+#version-number
+{
+    font-size: 48px;
+}
+    
 </style>
 </head>
 
@@ -151,15 +156,14 @@ body
 <div id="load-flashcards-box">
     <textarea id="load-flashcards-textarea" placeholder="Enter flashcard text here..."></textarea>
     <btn type="btn" class="btn position-bottom-right-50" onclick="loadFlashcardsFromText()">Load</btn>
+    <div id="version-number" class="position-bottom-left-50">Version 001</div>
 </div>
 
 <div id="view-flashcards-box" style="display: none;">
     <div id="card-number" class="position-top-left-25">2 / 23</div>
     <div id="card-front"><span>降ろす</span></div>
     <div id="divider-line"></div>
-    <div id="card-back">おろす to take down, unload [descend]</div>
-    <btn type="btn" class="btn position-bottom-right-25" onclick="advanceFlashCards()">Next</btn>
-    <btn type="btn" class="btn position-bottom-left-25" onclick="resetFlashCards()">Reset</btn>
+    <div id="card-back" onclick="advanceFlashCards()">おろす to take down, unload [descend]</div>
 </div>
 
 </body>
@@ -206,6 +210,7 @@ function advanceFlashCards()
 
     if (g_currentFlashCardNumber == g_flashcards.length - 1)
     {
+        resetFlashCards();
         return;
     }
 
